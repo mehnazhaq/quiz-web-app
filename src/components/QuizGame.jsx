@@ -22,12 +22,30 @@ function QuizGame() {
     }
   }, [id, navigate]);
 
-  function handleMCQAnswer(index) {
+  const currentQ = quizData?.questions[currentQuestionIndex];
+
+  /* ---------- SINGLE MCQ ---------- */
+  function handleSingleMCQ(optionIndex) {
     const updated = [...selectedAnswers];
-    updated[currentQuestionIndex] = index;
+    updated[currentQuestionIndex] = optionIndex;
     setSelectedAnswers(updated);
   }
 
+  /* ---------- MULTIPLE MCQ ---------- */
+  function handleMultipleMCQ(optionIndex) {
+    const updated = [...selectedAnswers];
+    const existing = updated[currentQuestionIndex] || [];
+
+    if (existing.includes(optionIndex)) {
+      updated[currentQuestionIndex] = existing.filter(i => i !== optionIndex);
+    } else {
+      updated[currentQuestionIndex] = [...existing, optionIndex];
+    }
+
+    setSelectedAnswers(updated);
+  }
+
+  /* ---------- SHORT ANSWER ---------- */
   function handleShortAnswer(value) {
     const updated = [...selectedAnswers];
     updated[currentQuestionIndex] = value;
@@ -48,42 +66,54 @@ function QuizGame() {
     return <p className="text-white text-center">Loading...</p>;
   }
 
-  const currentQ = quizData.questions[currentQuestionIndex];
-
   return (
     <>
       <Navbar />
       <div className="min-h-screen bg-[#A44200] text-white px-4 py-10 flex justify-center">
         <div className="bg-[#D58936] p-6 rounded-lg max-w-xl w-full space-y-5">
-          
+
           <h2 className="text-2xl font-bold">
             Question {currentQuestionIndex + 1}
           </h2>
 
           <p className="text-lg">{currentQ.question}</p>
 
-          {/* ✅ MCQ */}
-          {Array.isArray(currentQ.options) && currentQ.options.length > 0 && (
-            <div className="space-y-2">
-              {currentQ.options.map((opt, idx) => (
-                <label key={idx} className="flex gap-2 items-center">
-                  <input
-                    type="radio"
-                    name={`q-${currentQuestionIndex}`}
-                    checked={selectedAnswers[currentQuestionIndex] === idx}
-                    onChange={() => handleMCQAnswer(idx)}
-                  />
-                  {opt}
-                </label>
-              ))}
-            </div>
+          {/* ✅ SINGLE MCQ */}
+          {currentQ.correctOptionIndex !== undefined && (
+            currentQ.options.map((opt, idx) => (
+              <label key={idx} className="flex gap-2 items-center">
+                <input
+                  type="radio"
+                  name={`q-${currentQuestionIndex}`}
+                  checked={selectedAnswers[currentQuestionIndex] === idx}
+                  onChange={() => handleSingleMCQ(idx)}
+                />
+                {opt}
+              </label>
+            ))
+          )}
+
+          {/* ✅ MULTIPLE MCQ */}
+          {Array.isArray(currentQ.correctOptionIndexes) && (
+            currentQ.options.map((opt, idx) => (
+              <label key={idx} className="flex gap-2 items-center">
+                <input
+                  type="checkbox"
+                  checked={
+                    selectedAnswers[currentQuestionIndex]?.includes(idx) || false
+                  }
+                  onChange={() => handleMultipleMCQ(idx)}
+                />
+                {opt}
+              </label>
+            ))
           )}
 
           {/* ✅ SHORT ANSWER */}
-          {!currentQ.options && currentQ.answer && (
+          {currentQ.answer && (
             <input
               type="text"
-              placeholder="Type your answer here"
+              placeholder="Type your answer"
               className="w-full p-2 rounded text-black"
               value={selectedAnswers[currentQuestionIndex] || ""}
               onChange={(e) => handleShortAnswer(e.target.value)}
