@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import Navbar from "../Navbar";
 
 function Mcq_multiple() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [number, setNumber] = useState(1);
+
   const [currentQuestion, setCurrentQuestion] = useState({
     question: "",
     options: ["", "", "", ""],
     correctOptionIndexes: [],
-    createdAt: new Date().toISOString(),  
-  status: "active", 
+    createdAt: new Date().toISOString(),
+    status: "active",
   });
 
   const [questions, setQuestions] = useState([]);
@@ -18,7 +19,7 @@ function Mcq_multiple() {
   function addQuestion(e) {
     e.preventDefault();
 
-    const filledOpt = currentQuestion.options.filter(opt => opt.trim() !== "");
+    const filledOpt = currentQuestion.options.filter((o) => o.trim() !== "");
     if (
       currentQuestion.question.trim().length >= 10 &&
       filledOpt.length >= 2 &&
@@ -26,74 +27,67 @@ function Mcq_multiple() {
     ) {
       setQuestions([...questions, currentQuestion]);
     } else {
-      alert("Fill all the details");
+      alert("Please fill question, options & correct answers");
       return;
     }
 
     setCurrentQuestion({
       question: "",
       options: ["", "", "", ""],
-      correctOptionIndexes: []
+      correctOptionIndexes: [],
     });
 
     setNumber(number + 1);
   }
 
   function saveQuiz(e) {
-  e.preventDefault();
+    e.preventDefault();
 
-  const filledOptions = currentQuestion.options.filter(opt => opt.trim() !== "");
+    const filledOptions = currentQuestion.options.filter((o) => o.trim() !== "");
+    let updatedQuestions = [...questions];
 
-  let updatedQuestions = [...questions];
+    if (
+      currentQuestion.question.trim().length >= 10 &&
+      filledOptions.length >= 2 &&
+      currentQuestion.correctOptionIndexes.length >= 1
+    ) {
+      updatedQuestions.push(currentQuestion);
+    }
 
- 
-  if (
-    currentQuestion.question.trim().length >= 10 &&
-    filledOptions.length >= 2 &&
-    currentQuestion.correctOptionIndexes.length >= 1
-  ) {
-    updatedQuestions.push(currentQuestion);
+    if (
+      updatedQuestions.length < 2 ||
+      title.trim().length < 5 ||
+      description.trim().length < 10
+    ) {
+      alert("Minimum 2 valid questions required");
+      return;
+    }
+
+    const quizData = {
+      title,
+      description,
+      questions: updatedQuestions,
+      createdAt: new Date().toISOString(),
+      status: "active",
+    };
+
+    let existing = JSON.parse(localStorage.getItem("quizData")) || [];
+    if (!Array.isArray(existing)) existing = [];
+
+    existing.push(quizData);
+    localStorage.setItem("quizData", JSON.stringify(existing));
+    alert("Quiz saved successfully!");
+
+    setTitle("");
+    setDescription("");
+    setQuestions([]);
+    setNumber(1);
+    setCurrentQuestion({
+      question: "",
+      options: ["", "", "", ""],
+      correctOptionIndexes: [],
+    });
   }
-
-  if (
-    updatedQuestions.length < 2 ||
-    title.trim().length < 5 ||
-    description.trim().length < 10
-  ) {
-    alert("Please add at least 2 valid questions and a proper title/description");
-    return;
-  }
-
-  const quizData = {
-    title,
-    description,
-    questions: updatedQuestions,
-     createdAt: new Date().toISOString(),  
-    status: "active", 
-  };
-
-  let existing = JSON.parse(localStorage.getItem("quizData")) || [];
-  if (!Array.isArray(existing)) existing = [];
-
-  existing.push(quizData);
-  localStorage.setItem("quizData", JSON.stringify(existing));
-  alert("Quiz saved successfully!");
-
-
-  setTitle("");
-  setDescription("");
-  setQuestions([]);
-  setCurrentQuestion({
-    question: "",
-    options: ["", "", "", ""],
-    correctOptionIndexes: [],
-    createdAt: new Date().toISOString(),  
-  status: "active", 
-     
-  });
-  setNumber(1);
-}
-
 
   function handleOptionChange(i, value) {
     const updated = [...currentQuestion.options];
@@ -106,127 +100,142 @@ function Mcq_multiple() {
     updatedOptions.splice(i, 1);
 
     const updatedCorrectIndexes = currentQuestion.correctOptionIndexes
-      .filter(index => index !== i)
-      .map(index => index > i ? index - 1 : index);
+      .filter((index) => index !== i)
+      .map((index) => (index > i ? index - 1 : index));
 
     setCurrentQuestion({
       ...currentQuestion,
       options: updatedOptions,
-      correctOptionIndexes: updatedCorrectIndexes
+      correctOptionIndexes: updatedCorrectIndexes,
     });
   }
 
   function toggleCorrectOptions(index) {
-    const alreadySelected = currentQuestion.correctOptionIndexes.includes(index);
+    const alreadySelected =
+      currentQuestion.correctOptionIndexes.includes(index);
+
     const updated = alreadySelected
-      ? currentQuestion.correctOptionIndexes.filter(i => i !== index)
+      ? currentQuestion.correctOptionIndexes.filter((i) => i !== index)
       : [...currentQuestion.correctOptionIndexes, index];
 
-    setCurrentQuestion({ ...currentQuestion, correctOptionIndexes: updated });
+    setCurrentQuestion({
+      ...currentQuestion,
+      correctOptionIndexes: updated,
+    });
   }
 
   return (
     <>
       <Navbar />
-      <div className="w-full min-h-screen p-4 md:p-10 bg-red-900 flex items-start justify-center">
-        <div className="p-4 md:p-8 bg-red-200 rounded-lg shadow-lg w-full max-w-3xl">
-          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">
-            MCQ (Multiple Correct Answers)
+
+      <div className="min-h-screen bg-gradient-to-br from-red-900 via-rose-900 to-black px-4 py-10">
+        <div className="max-w-4xl mx-auto backdrop-blur-xl bg-white/20 rounded-2xl shadow-2xl p-6 md:p-10">
+
+          <h2 className="text-3xl font-bold text-white text-center mb-6">
+            MCQ – Multiple Correct Answers
           </h2>
 
-          <form className="space-y-6">
-            <div className="border-2 p-4 md:p-6 shadow border-black-100 rounded-lg">
-              <input
-                type="text"
-                value={title}
-                placeholder="Enter Quiz Title"
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full mb-3 p-2 rounded border"
-              />
-              <textarea
-                value={description}
-                placeholder="Add Description"
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full p-2 rounded border"
-                rows={4}
-              ></textarea>
-            </div>
+          {/* Quiz Info */}
+          <div className="bg-white/90 rounded-xl p-5 mb-8">
+            <input
+              type="text"
+              value={title}
+              placeholder="Quiz Title"
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full mb-3 p-3 border rounded"
+            />
+            <textarea
+              value={description}
+              placeholder="Quiz Description"
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full p-3 border rounded"
+              rows={4}
+            />
+          </div>
 
-            <div className="space-y-2">
-              <label className="block font-semibold">
-                Question {number}
-              </label>
-              <input
-                type="text"
-                value={currentQuestion.question}
-                placeholder="Enter Question"
-                onChange={(e) =>
-                  setCurrentQuestion({ ...currentQuestion, question: e.target.value })
-                }
-                className="w-full mt-2 p-2 rounded border"
-              />
+          {/* Question */}
+          <div className="bg-white/90 rounded-xl p-5 mb-6">
+            <label className="font-semibold block mb-2">
+              Question {number}
+            </label>
 
-              {currentQuestion.options.map((option, i) => (
-                <div key={i} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-2">
+            <input
+              type="text"
+              value={currentQuestion.question}
+              placeholder="Enter question (min 10 characters)"
+              onChange={(e) =>
+                setCurrentQuestion({
+                  ...currentQuestion,
+                  question: e.target.value,
+                })
+              }
+              className="w-full p-3 border rounded mb-4"
+            />
+
+            {currentQuestion.options.map((option, i) => (
+              <div
+                key={i}
+                className="flex flex-col sm:flex-row items-center gap-3 mb-3"
+              >
+                <input
+                  type="text"
+                  value={option}
+                  placeholder={`Option ${i + 1}`}
+                  onChange={(e) => handleOptionChange(i, e.target.value)}
+                  className="flex-1 p-2 border rounded"
+                />
+
+                <label className="flex items-center gap-1 text-sm">
                   <input
-                    type="text"
-                    value={option}
-                    placeholder={`Option ${i + 1}`}
-                    onChange={(e) => handleOptionChange(i, e.target.value)}
-                    className="w-full p-2 rounded border"
+                    type="checkbox"
+                    checked={currentQuestion.correctOptionIndexes.includes(i)}
+                    onChange={() => toggleCorrectOptions(i)}
                   />
+                  Correct
+                </label>
 
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="checkbox"
-                      checked={currentQuestion.correctOptionIndexes.includes(i)}
-                      onChange={() => toggleCorrectOptions(i)}
-                    />
-                    <span className="text-sm">Correct</span>
-                  </div>
+                {currentQuestion.options.length > 2 && (
+                  <button
+                    type="button"
+                    onClick={() => removeOption(i)}
+                    className="bg-red-500 text-white px-2 py-1 rounded"
+                  >
+                    ❌
+                  </button>
+                )}
 
-                  <div className="flex gap-1">
-                    {currentQuestion.options.length > 2 && (
-                      <button
-                        type="button"
-                        onClick={() => removeOption(i)}
-                        className="bg-red-500 text-white px-2 py-1 rounded"
-                      >
-                        ❌
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setCurrentQuestion({
-                          ...currentQuestion,
-                          options: [...currentQuestion.options, ""]
-                        })
-                      }
-                      className="bg-green-500 text-white px-2 py-1 rounded"
-                    >
-                      ➕
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentQuestion({
+                      ...currentQuestion,
+                      options: [...currentQuestion.options, ""],
+                    })
+                  }
+                  className="bg-green-500 text-white px-2 py-1 rounded"
+                >
+                  ➕
+                </button>
+              </div>
+            ))}
+          </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4 mt-6">
-              <button
-                className="bg-[#D58936] text-white px-4 py-2 rounded w-full sm:w-auto"
-                onClick={addQuestion}
-              >
-                Add Question
-              </button>
-              <button
-                className="bg-[#A44200] text-white px-4 py-2 rounded w-full sm:w-auto"
-                onClick={saveQuiz}
-              >
-                Save Quiz
-              </button>
-            </div>
-          </form>
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={addQuestion}
+              className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg"
+            >
+              ➕ Add Question
+            </button>
+
+            <button
+              onClick={saveQuiz}
+              className="bg-red-700 hover:bg-red-800 text-white px-6 py-2 rounded-lg"
+            >
+              💾 Save Quiz
+            </button>
+          </div>
         </div>
       </div>
     </>

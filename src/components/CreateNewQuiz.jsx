@@ -1,37 +1,70 @@
-import { Link } from 'react-router-dom';
-import Navbar from './Navbar';
+import { Link } from "react-router-dom";
+import Navbar from "./Navbar";
 
 function CreateNewQuiz() {
   return (
     <>
       <Navbar />
-      <div className="w-full min-h-screen bg-gradient-to-b from-rose-950 via-stone-500 to-red-950 flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-5xl bg-zinc-300 rounded-lg p-6 md:p-10 shadow-xl">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-black mb-8 text-center">
-            Select Question Type
-          </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
-            <Link to="/create-quiz/Mcq_single">
-              <div className="bg-stone-300 rounded-lg p-4 sm:p-6 text-xl sm:text-2xl md:text-3xl font-semibold text-black shadow hover:bg-stone-400 cursor-pointer transition text-center">
-                MCQ (Single right answer)
+      {/* Background */}
+      <div className="w-full min-h-screen bg-gradient-to-br from-rose-950 via-red-900 to-black flex items-center justify-center px-4 py-10">
+
+        {/* Card */}
+        <div className="w-full max-w-5xl backdrop-blur-lg bg-white/20 rounded-2xl p-8 md:p-12 shadow-2xl">
+
+          {/* Heading */}
+          <h2 className="text-3xl md:text-4xl font-extrabold text-white text-center mb-3">
+            Select Question Type ✍️
+          </h2>
+          <p className="text-center text-gray-200 mb-10">
+            Choose how you want to create your quiz questions
+          </p>
+
+          {/* Options */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+
+            {/* MCQ Single */}
+            <Link to="/create-quiz/Mcq_single" className="group">
+              <div className="bg-white/80 rounded-xl p-6 text-center shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl">
+                <div className="text-4xl mb-3">🅰️</div>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
+                  MCQ (Single Answer)
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  Only one correct option
+                </p>
               </div>
             </Link>
 
-            <Link to="/create-quiz/Mcq_multiple">
-              <div className="bg-stone-300 rounded-lg p-4 sm:p-6 text-xl sm:text-2xl md:text-3xl font-semibold text-black shadow hover:bg-stone-400 cursor-pointer transition text-center">
-                MCQ (Multiple right answers)
+            {/* MCQ Multiple */}
+            <Link to="/create-quiz/Mcq_multiple" className="group">
+              <div className="bg-white/80 rounded-xl p-6 text-center shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl">
+                <div className="text-4xl mb-3">🔢</div>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
+                  MCQ (Multiple Answers)
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  More than one correct option
+                </p>
               </div>
             </Link>
           </div>
 
-          <Link to="/create-quiz/Short_answer">
+          {/* Short Answer */}
+          <Link to="/create-quiz/Short_answer" className="group">
             <div className="flex justify-center">
-              <div className="bg-stone-300 rounded-lg p-4 sm:p-6 text-xl sm:text-2xl md:text-3xl font-semibold text-black shadow hover:bg-stone-400 cursor-pointer transition text-center w-full md:w-2/3">
-                Short Answer (1 or 2 words)
+              <div className="bg-white/80 rounded-xl p-6 text-center shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl w-full md:w-2/3">
+                <div className="text-4xl mb-3">✏️</div>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
+                  Short Answer
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  Answer in 1–2 words
+                </p>
               </div>
             </div>
           </Link>
+
         </div>
       </div>
     </>

@@ -5,24 +5,27 @@ function Mcq_single() {
   const [number, setNumber] = useState(1);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+
   const [currentQuestion, setCurrentQuestion] = useState({
     question: "",
     options: ["", "", "", ""],
     correctOptionIndex: null,
-     createdAt: new Date().toISOString(), 
-  status: "active",
+    createdAt: new Date().toISOString(),
+    status: "active",
   });
+
   const [questions, setQuestions] = useState([]);
 
   function addQuestion(e) {
     e.preventDefault();
-    const filledOpts = currentQuestion.options.filter((opt) => opt.trim() !== "");
+
+    const filledOpts = currentQuestion.options.filter((o) => o.trim() !== "");
     if (
       currentQuestion.question.trim().length < 10 ||
       filledOpts.length < 2 ||
       currentQuestion.correctOptionIndex === null
     ) {
-      alert("Please fill all the details");
+      alert("Please fill all details correctly");
       return;
     }
 
@@ -41,173 +44,181 @@ function Mcq_single() {
     setCurrentQuestion({ ...currentQuestion, options: updated });
   }
 
- function saveQuiz(e) {
-  e.preventDefault();
+  function saveQuiz(e) {
+    e.preventDefault();
 
-  if (title.trim().length < 5 || description.trim().length < 10) {
-    alert("Please fill the title and description properly");
-    return;
+    if (title.trim().length < 5 || description.trim().length < 10) {
+      alert("Please enter valid title & description");
+      return;
+    }
+
+    let updatedQuestions = [...questions];
+
+    if (
+      currentQuestion.question.trim() !== "" &&
+      currentQuestion.options.some((o) => o.trim() !== "") &&
+      currentQuestion.correctOptionIndex !== null
+    ) {
+      updatedQuestions.push(currentQuestion);
+    }
+
+    if (updatedQuestions.length < 1) {
+      alert("Add at least one question");
+      return;
+    }
+
+    const quizData = {
+      title,
+      description,
+      questions: updatedQuestions,
+      createdAt: new Date().toISOString(),
+      status: "active",
+    };
+
+    let existing = JSON.parse(localStorage.getItem("quizData")) || [];
+    existing.push(quizData);
+    localStorage.setItem("quizData", JSON.stringify(existing));
+
+    alert("Quiz saved successfully!");
+
+    setTitle("");
+    setDescription("");
+    setQuestions([]);
+    setCurrentQuestion({
+      question: "",
+      options: ["", "", "", ""],
+      correctOptionIndex: null,
+    });
+    setNumber(1);
   }
-
-  let updatedQuestions = [...questions];
-
-  if (
-    currentQuestion.question.trim() !== "" &&
-    currentQuestion.options.some(opt => opt.trim() !== "") &&
-    currentQuestion.correctOptionIndex !== null
-  ) {
-    updatedQuestions.push(currentQuestion);
-  }
-
-  if (updatedQuestions.length < 1) {
-    alert("Please add at least one valid question");
-    return;
-  }
-
-  const quizData = {
-    title,
-    description,
-    questions: updatedQuestions,
-    createdAt: new Date().toISOString(),  
-    status: "active",                    
-  };
-
-  let existing = JSON.parse(localStorage.getItem("quizData"));
-  if (!Array.isArray(existing)) existing = [];
-
-  existing.push(quizData);
-  localStorage.setItem("quizData", JSON.stringify(existing));
-  alert("Quiz saved successfully!");
-
-  setTitle("");
-  setDescription("");
-  setQuestions([]);
-  setCurrentQuestion({
-    question: "",
-    options: ["", "", "", ""],
-    correctOptionIndex: null,
-    createdAt: new Date().toISOString(),  
-  status: "active", 
-  });
-  setNumber(1);
-}
-
-
 
   return (
     <>
       <Navbar />
-      <div className="w-full min-h-screen p-4 md:p-10 bg-red-900 flex items-start justify-center">
-        <div className="p-4 md:p-8 bg-red-200 rounded-lg shadow-lg w-full max-w-3xl">
-          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">
-            MCQ (Single Correct Answer)
+
+      <div className="min-h-screen bg-gradient-to-br from-red-900 via-rose-900 to-black px-4 py-10">
+        <div className="max-w-4xl mx-auto backdrop-blur-xl bg-white/20 rounded-2xl shadow-2xl p-6 md:p-10">
+
+          <h2 className="text-3xl font-bold text-white text-center mb-6">
+            MCQ – Single Correct Answer
           </h2>
 
-          <form className="space-y-6">
-            <div className="border-2 p-4 md:p-6 shadow border-black-100 rounded-lg">
-              <input
-                onChange={(e) => setTitle(e.target.value)}
-                value={title}
-                type="text"
-                placeholder="Enter Quiz Title"
-                className="w-full mb-3 p-2 rounded border"
-              />
-              <textarea
-                onChange={(e) => setDescription(e.target.value)}
-                value={description}
-                placeholder="Add Description"
-                className="w-full p-2 rounded border"
-                rows={4}
-              />
-            </div>
+          {/* Quiz Info */}
+          <div className="bg-white/90 rounded-xl p-5 mb-8">
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Quiz Title"
+              className="w-full p-3 mb-3 border rounded"
+            />
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Quiz Description"
+              className="w-full p-3 border rounded"
+              rows={4}
+            />
+          </div>
 
-            <div className="space-y-2">
-              <label className="block font-semibold">
-                Question {number}
-              </label>
-              <input
-                type="text"
-                placeholder="Enter Question"
-                value={currentQuestion.question}
-                onChange={(e) =>
-                  setCurrentQuestion({ ...currentQuestion, question: e.target.value })
-                }
-                className="w-full mt-2 p-2 rounded border"
-              />
+          {/* Question */}
+          <div className="bg-white/90 rounded-xl p-5 mb-6">
+            <label className="font-semibold block mb-2">
+              Question {number}
+            </label>
 
-              {currentQuestion.options.map((option, i) => (
-                <div key={i} className="flex flex-col sm:flex-row gap-2 mb-2">
-                  <input
-                    type="text"
-                    placeholder={`Option ${i + 1}`}
-                    value={option}
-                    onChange={(e) => handleOptions(i, e.target.value)}
-                    className="flex-1 p-2 rounded border"
-                  />
-                  <div className="flex gap-2">
-                    {currentQuestion.options.length > 2 && (
-                      <button
-                        type="button"
-                        className="bg-red-500 text-white px-3 py-1 rounded"
-                        onClick={() => {
-                          const newOptions = [...currentQuestion.options];
-                          newOptions.splice(i, 1);
-                          setCurrentQuestion({ ...currentQuestion, options: newOptions });
-                        }}
-                      >
-                        ❌
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      className="bg-green-500 text-white px-3 py-1 rounded"
-                      onClick={() =>
-                        setCurrentQuestion({
-                          ...currentQuestion,
-                          options: [...currentQuestion.options, ""],
-                        })
-                      }
-                    >
-                      ➕
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <select
-              className="w-full p-2 rounded border"
-              value={currentQuestion.correctOptionIndex ?? ""}
-              onChange={(event) =>
+            <input
+              value={currentQuestion.question}
+              onChange={(e) =>
                 setCurrentQuestion({
                   ...currentQuestion,
-                  correctOptionIndex: parseInt(event.target.value),
+                  question: e.target.value,
+                })
+              }
+              placeholder="Enter question (min 10 characters)"
+              className="w-full p-3 border rounded mb-4"
+            />
+
+            {currentQuestion.options.map((option, i) => (
+              <div
+                key={i}
+                className="flex flex-col sm:flex-row items-center gap-3 mb-3"
+              >
+                <input
+                  value={option}
+                  onChange={(e) => handleOptions(i, e.target.value)}
+                  placeholder={`Option ${i + 1}`}
+                  className="flex-1 p-2 border rounded"
+                />
+
+                {currentQuestion.options.length > 2 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newOptions = [...currentQuestion.options];
+                      newOptions.splice(i, 1);
+                      setCurrentQuestion({
+                        ...currentQuestion,
+                        options: newOptions,
+                      });
+                    }}
+                    className="bg-red-500 text-white px-2 py-1 rounded"
+                  >
+                    ❌
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentQuestion({
+                      ...currentQuestion,
+                      options: [...currentQuestion.options, ""],
+                    })
+                  }
+                  className="bg-green-500 text-white px-2 py-1 rounded"
+                >
+                  ➕
+                </button>
+              </div>
+            ))}
+
+            {/* Correct Option */}
+            <select
+              className="w-full p-3 border rounded mt-4"
+              value={currentQuestion.correctOptionIndex ?? ""}
+              onChange={(e) =>
+                setCurrentQuestion({
+                  ...currentQuestion,
+                  correctOptionIndex: parseInt(e.target.value),
                 })
               }
             >
-              <option value="">Select The Correct Option</option>
-              {currentQuestion.options.map((option, i) => (
+              <option value="">Select Correct Option</option>
+              {currentQuestion.options.map((_, i) => (
                 <option key={i} value={i}>
                   Option {i + 1}
                 </option>
               ))}
             </select>
+          </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4 mt-6">
-              <button
-                className="bg-[#D58936] text-white px-4 py-2 rounded w-full sm:w-auto"
-                onClick={addQuestion}
-              >
-                Add Question
-              </button>
-              <button
-                className="bg-[#A44200] text-white px-4 py-2 rounded w-full sm:w-auto"
-                onClick={saveQuiz}
-              >
-                Save Quiz
-              </button>
-            </div>
-          </form>
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={addQuestion}
+              className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg"
+            >
+              ➕ Add Question
+            </button>
+
+            <button
+              onClick={saveQuiz}
+              className="bg-red-700 hover:bg-red-800 text-white px-6 py-2 rounded-lg"
+            >
+              💾 Save Quiz
+            </button>
+          </div>
+
         </div>
       </div>
     </>
