@@ -3,9 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "./Navbar";
 
 function QuizGame() {
-
-
-  const { id } = useParams(); 
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const [quizData, setQuizData] = useState(null);
@@ -14,40 +12,30 @@ function QuizGame() {
 
   useEffect(() => {
     const raw = localStorage.getItem("quizData");
-    console.log("raw quizData:", raw);
-
-    let allQuizzes = [];
-
-    try {
-      allQuizzes = JSON.parse(raw) || [];
-    } catch (e) {
-      console.error("Error parsing quizData:", e);
-      return;
-    }
-
-    console.log("parsed quizzes:", allQuizzes);
+    const allQuizzes = JSON.parse(raw) || [];
 
     const index = parseInt(id);
-    console.log("Index from URL:", index);
-
-    if (!isNaN(index) && Array.isArray(allQuizzes) && allQuizzes[index]) {
+    if (allQuizzes[index]) {
       setQuizData(allQuizzes[index]);
     } else {
-      console.error("❌ Quiz not found!");
       navigate("/PlayQuiz");
     }
   }, [id, navigate]);
-  console.log(quizData);
-  
 
-  function handleAnswerSelection(index) {
-    const updatedAnswers = [...selectedAnswers];
-    updatedAnswers[currentQuestionIndex] = index;
-    setSelectedAnswers(updatedAnswers);
+  function handleMCQAnswer(index) {
+    const updated = [...selectedAnswers];
+    updated[currentQuestionIndex] = index;
+    setSelectedAnswers(updated);
+  }
+
+  function handleShortAnswer(value) {
+    const updated = [...selectedAnswers];
+    updated[currentQuestionIndex] = value;
+    setSelectedAnswers(updated);
   }
 
   function handleNext() {
-    if (quizData && currentQuestionIndex < quizData.questions.length - 1) {
+    if (currentQuestionIndex < quizData.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       localStorage.setItem("useranswers", JSON.stringify(selectedAnswers));
@@ -57,11 +45,7 @@ function QuizGame() {
   }
 
   if (!quizData) {
-    return (
-      <div className="min-h-screen flex justify-center items-center bg-[#A44200] text-white">
-        <p className="text-xl">Loading...</p>
-      </div>
-    );
+    return <p className="text-white text-center">Loading...</p>;
   }
 
   const currentQ = quizData.questions[currentQuestionIndex];
@@ -69,30 +53,50 @@ function QuizGame() {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-[#A44200] text-white px-4 py-10 flex items-start justify-center">
-        <div className="bg-[#D58936] p-6 sm:p-8 rounded-lg shadow-lg max-w-2xl w-full space-y-6">
-          <h2 className="text-xl sm:text-2xl font-bold">Question {currentQuestionIndex + 1}</h2>
-          <p className="text-base sm:text-lg">{currentQ.question}</p>
+      <div className="min-h-screen bg-[#A44200] text-white px-4 py-10 flex justify-center">
+        <div className="bg-[#D58936] p-6 rounded-lg max-w-xl w-full space-y-5">
+          
+          <h2 className="text-2xl font-bold">
+            Question {currentQuestionIndex + 1}
+          </h2>
 
-          <div className="space-y-3">
-            {currentQ.options?.map((opt, idx) => (
-              <div key={idx} className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name={`option-${currentQuestionIndex}`}
-                  checked={selectedAnswers[currentQuestionIndex] === idx}
-                  onChange={() => handleAnswerSelection(idx)}
-                />
-                <label className="text-sm sm:text-base">{opt}</label>
-              </div>
-            ))}
-          </div>
+          <p className="text-lg">{currentQ.question}</p>
+
+          {/* ✅ MCQ */}
+          {Array.isArray(currentQ.options) && currentQ.options.length > 0 && (
+            <div className="space-y-2">
+              {currentQ.options.map((opt, idx) => (
+                <label key={idx} className="flex gap-2 items-center">
+                  <input
+                    type="radio"
+                    name={`q-${currentQuestionIndex}`}
+                    checked={selectedAnswers[currentQuestionIndex] === idx}
+                    onChange={() => handleMCQAnswer(idx)}
+                  />
+                  {opt}
+                </label>
+              ))}
+            </div>
+          )}
+
+          {/* ✅ SHORT ANSWER */}
+          {!currentQ.options && currentQ.answer && (
+            <input
+              type="text"
+              placeholder="Type your answer here"
+              className="w-full p-2 rounded text-black"
+              value={selectedAnswers[currentQuestionIndex] || ""}
+              onChange={(e) => handleShortAnswer(e.target.value)}
+            />
+          )}
 
           <button
-            className="bg-[#A44200] text-white px-4 py-2 rounded hover:bg-[#922f00] transition"
+            className="bg-[#A44200] px-4 py-2 rounded hover:bg-[#7a2a00]"
             onClick={handleNext}
           >
-            {currentQuestionIndex === quizData.questions.length - 1 ? "Finish" : "Next"}
+            {currentQuestionIndex === quizData.questions.length - 1
+              ? "Finish"
+              : "Next"}
           </button>
         </div>
       </div>
